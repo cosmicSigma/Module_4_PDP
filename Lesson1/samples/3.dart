@@ -1,3 +1,6 @@
+// main
+import 'dart:convert';
+import 'dart:io';
 class User {
   int id;
   String name;
@@ -20,18 +23,29 @@ class User {
     String phone = json["phone"];
     String website = json["website"];
     Company company = Company.fromJson(json["company"]);
-    return User(id, name, username, email, address, phone, website, company);
+    return User(
+        id,
+        name,
+        username,
+        email,
+        address,
+        phone,
+        website,
+        company);
   }
-  Map<String, dynamic> toJson() =>{
-    "id":id,
-    "name":name,
-    "username":username,
-    "email":email,
-    "address":address.toJson(),
-    "phone":phone,
-    "website":website,
-    "company":company.toJson(),
-  };
+
+  Map<String, dynamic> toJson() =>
+      {
+        "id": id,
+        "name": name,
+        "username": username,
+        "email": email,
+        "address": address.toJson(),
+        "phone": phone,
+        "website": website,
+        "company": company.toJson(),
+      };
+
   @override
   String toString() {
     return 'User{id: $id, name: $name, username: $username, email: $email, address: $address, phone: $phone, website: $website, company: $company,}';
@@ -52,11 +66,12 @@ class Company {
     return Company(name, catchPhrase, bs);
   }
 
-  Map<String, dynamic> toJson() => {
-    "name": name,
-    "catchPhrase": catchPhrase,
-    "bs": bs,
-  };
+  Map<String, dynamic> toJson() =>
+      {
+        "name": name,
+        "catchPhrase": catchPhrase,
+        "bs": bs,
+      };
 
   @override
   String toString() {
@@ -83,13 +98,14 @@ class Address {
     return Address(street, suite, city, zipcode, geo);
   }
 
-  Map<String, dynamic> toJson() => {
-    "street": street,
-    "suite": suite,
-    "city": city,
-    "zipcode": zipcode,
-    "geo": geo.toJson(),
-  };
+  Map<String, dynamic> toJson() =>
+      {
+        "street": street,
+        "suite": suite,
+        "city": city,
+        "zipcode": zipcode,
+        "geo": geo.toJson(),
+      };
 
   @override
   String toString() {
@@ -109,55 +125,116 @@ class Geo {
     return Geo(lat, lng);
   }
 
-  Map<String, dynamic> toJson() => {
-    "lat": lat,
-    "lng": lng,
-  };
+  Map<String, dynamic> toJson() =>
+      {
+        "lat": lat,
+        "lng": lng,
+      };
 
   @override
   String toString() {
     return 'Geo{lat: $lat, lng: $lng}';
   }
 }
-final mainJson = {
-  "id": 1,
-  "name": "Leanne Graham",
-  "username": "Bret",
-  "email": "Sincere@april.biz",
-  "address": {
-    "street": "Kulas Light",
-    "suite": "Apt. 556",
-    "city": "Gwenborough",
-    "zipcode": "92998-3874",
-    "geo": {
-      "lat": "-37.3159",
-      "lng": "81.1496",
-    }
-  },
-  "phone": "1-770-736-8031 x56442",
-  "website": "hildegard.org",
-  "company": {
-    "name": "Romaguera-Crona",
-    "catchPhrase": "Multi-layered client-server neural-net",
-    "bs": "harness real-time e-markets"
+
+void main() async {
+  Network http = Network();
+  String result = await http.get(Api.baseUrl, Api.user.path);
+  List list = jsonDecode(result);
+
+  List<User> users = list.map<User>((map) => User.fromJson(map)).toList();
+  for(final user in users) {
+    print(user);
   }
-};
 
-void main(){
-  final user = User.fromJson(mainJson);
-  print(user);
+  http.close();
 }
-final subLittleJson = {"lat": "-37.3159", "lng": "81.1496"};
 
-final subJson = {
-  "street": "Kulas Light",
-  "suite": "Apt. 556",
-  "city": "Gwenborough",
-  "zipcode": "92998-3874",
-};
-final parentJson = {
-  "id": 1,
-  "name": "Leanne Graham",
-  "username": "Bret",
-  "email": "Sincere@april.biz",
-};
+// network
+
+class Network {
+  // class setting: singleton
+  Network._();
+  static final _instance = Network._();
+  factory Network() => _instance;
+
+  // object for connection network
+  final _network = HttpClient();
+  void close() => _network.close();
+
+  // Methods
+  Future<String> get(String baseUrl, String path, [int? id]) async {
+    final url = Uri.https(baseUrl, "$path${id != null ? "/$id": ""}");
+    final request = await _network.getUrl(url);
+    request.headers.contentType = ContentType("application", "json", charset: "utf-8");
+    final response = await request.close();
+    String result = await response.transform(utf8.decoder).join();
+    return result;
+  }
+
+  Future<String> post(String baseUrl, String path, Map<String, dynamic> body) async {
+    final url = Uri.https(baseUrl, path);
+    final request = await _network.postUrl(url);
+    request.headers.contentType = ContentType("application", "json", charset: "utf-8");
+
+    String data = jsonEncode(body);
+    List<int> dataByte = utf8.encode(data);
+    request.add(dataByte);
+
+    final response = await request.close();
+    String result = await response.transform(utf8.decoder).join();
+    return result;
+  }
+
+  Future<String> put(String baseUrl, String path, int id, Map<String, dynamic> body) async {
+    final url = Uri.https(baseUrl, "$path/$id");
+    final request = await _network.putUrl(url);
+    request.headers.contentType = ContentType("application", "json", charset: "utf-8");
+
+    String data = jsonEncode(body);
+    List<int> dataByte = utf8.encode(data);
+    request.add(dataByte);
+
+    final response = await request.close();
+    String result = await response.transform(utf8.decoder).join();
+    return result;
+  }
+
+  Future<String> patch(String baseUrl, String path, int id, Map<String, dynamic> body) async {
+    final url = Uri.https(baseUrl, "$path/$id");
+    final request = await _network.patchUrl(url);
+    request.headers.contentType = ContentType("application", "json", charset: "utf-8");
+
+    String data = jsonEncode(body);
+    List<int> dataByte = utf8.encode(data);
+    request.add(dataByte);
+
+    final response = await request.close();
+    String result = await response.transform(utf8.decoder).join();
+    return result;
+  }
+
+  Future<String> delete(String baseUrl, String path, int id) async {
+    final url = Uri.https(baseUrl, "$path/$id");
+    final request = await _network.deleteUrl(url);
+    request.headers.contentType = ContentType("application", "json", charset: "utf-8");
+    final response = await request.close();
+    String result = await response.transform(utf8.decoder).join();
+    return result;
+  }
+}
+
+// api
+enum Api {
+  album("/albums"),
+  post("/posts"),
+  comment("/comments"),
+  todo("/todos"),
+  user("/users"),
+  photo("/photos");
+
+  const Api(this.path);
+  final String path;
+
+  static final baseUrl = "jsonplaceholder.typicode.com";
+}
