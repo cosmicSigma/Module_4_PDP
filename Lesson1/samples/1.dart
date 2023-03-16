@@ -89,3 +89,5 @@ void main() {
   Restaurant restaurant = Restaurant.fromJson(json);
   print(restaurant);
 }
+
+void temp() => print("hello");
