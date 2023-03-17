@@ -4,6 +4,9 @@ import 'models/1.dart';
 import 'models/2.dart';
 import 'models/3.dart';
 import 'models/4.dart';
+import 'models/5.dart';
+import 'models/6.dart';
+import 'models/7.dart';
 
 class Network {
   // class setting: singleton
@@ -81,5 +84,7 @@ class Network {
   V3 parseOneV3(String data) => V3.fromJson(jsonDecode(data));
   Products parseOneProduct(String data) => Products.fromJson(jsonDecode(data));
   Woof parseOneWoof(String data) => Woof.fromJson(jsonDecode(data));
-
+  Brewery parseOneBrewery(String data) => Brewery.fromJson(jsonDecode(data));
+  IP parseOneIP(String data) => IP.fromJson(jsonDecode(data));
+  Activity parseOneActivity(String data) => Activity.fromJson(jsonDecode(data));
 }
